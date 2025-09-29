@@ -1,32 +1,66 @@
 const express = require('express')
 const server = express()
 
+server.use(express.json())
 
+let customers = [
+    { id: 1, name: "Dev Samurai", site: "http://devsamurai.com.br"},
+    { id: 2, name: "Google", site: "http://google.com"},
+    { id: 3, name: "UOL", site: "http://uol.com.br"}
+]
 
+//Lista todos os clientes
+server.get("/customers", (req, res) => {
+    return res.json(customers)
+})
 
+//Retorna um cliente específico
+server.get("/customers/:id", (req, res) => {
+    const id = parseInt(req.params.id)
+    const customer = customers.find(item => item.id === id)
+    const status = customer ? 200 : 404
 
-//Parametros de consulta  = /hello?name=John&age=20
-server.get("/hello", (req, res) => {
+    return res.status(status).json(customer)
+})
 
-    const{ nome , idade } = req.query
+//Adicionar um Cliente
+server.post("/customers", (req, res) => {
+    const { name, site} = req.body
+    const id = Date.now()
 
-    return res.json({
-        title: "Hello World", 
-        message: `Hello ${nome}!`, 
-        idade: idade})
+    const newCustomer = { id, name, site}
+    customers.push(newCustomer)
+
+    return res.status(201).json(newCustomer)
 })
 
 
-//Parametros de rota = /hello/John/20
-server.get("/hello/:nome", (req, res) => {
-    const nome = req.params.nome
+//Edita um cliente
+server.put("/customers/:id", (req, res) => {
+    const id = parseInt(req.params.id)
+    const { name, site } = req.body
 
-    return res.json({
-        title: "Hello World", 
-        message: `Hello ${nome}`})
+    const index = customers.findIndex(item => item.id === id)
+    const status = index >= 0 ? 200 : 404
+
+    if(index >= 0){
+        customers[index] = {id: parseInt(id), name, site}
+    }
+
+    return res.status(status).json(customers[index])
 })
 
+server.delete("/customers/:id", (req, res) => {
+    const id = parseInt(req.params.id)
+    const index = customers.findIndex(item => item.id === id)
+    const status = index >= 0 ? 200 : 404
 
+    if (index >=0) {
+        customers.splice(index, 1)
+    }
+
+    return res.status(status).json()
+})
 
 server.listen(3002)
 
